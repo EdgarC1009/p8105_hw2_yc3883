@@ -11,7 +11,7 @@ library(readxl)
 ```
 
 # Problem 1
-## Problem 1 (1)
+## Problem 1 (a)
 
 Read and clean the Mr. Trash Wheel sheet:
 
@@ -28,7 +28,7 @@ trashw_df =
   mutate(sports_balls = round(sports_balls))
 ```
 
-## Problem 1 (2)
+## Problem 1 (b)
 
 Read and clean precipitation data for 2018 and 2019. For each, omit rows without precipitation data and add a variable for year. Next, combine precipitation datasets and convert month to a character variable.
 
@@ -124,10 +124,11 @@ For "snp_df", it contains `r names(snp_df)`, which means the closing values of t
 
 For "unemploy_df", it contains `r names(unemploy_df)`, which represents the percentage of unemployment for the given time.
 
-Resulting dataset combined three above datasets together. The dimension of "union3_df" is `r dim(union3_df)` indicating rows and columns respectively. The range of years is [`r range(pull(union3_df, year))`]. Key variables are `r names(union3_df)`.
+Resulting dataset combined three above datasets together. The dimension of "union3_df" is `r dim(union3_df)` indicating rows and columns respectively. The range of years is [`r range(pull(union3_df, year))`]. Key variables are `r names(union3_df)`. This is a comprehensive version of the three datasets above.
 
 
-## Problem 3
+# Problem 3
+## Problem 3 (a)
 
 Load and tidy the data. Note that, although these data may seem fairly well formatted initially, the names of a categorical predictor and the case structure of string variables changed over time; you’ll need to address this in your data cleaning. Also, some rows seem duplicated, and these will need to be removed.
 
@@ -141,6 +142,8 @@ pbname_df =
          ethnicity = replace(ethnicity, ethnicity == "WHITE NON HISP", "WHITE NON HISPANIC")) %>% 
   distinct()
 ```
+
+## Problem 3 (b)
 
 Produce a well-structured, reader-friendly table showing the rank in popularity of the name “Olivia” as a female baby name over time; this should have rows for ethnicities and columns for year.
 
@@ -157,7 +160,11 @@ olivia_df =
     values_from = "rank"
   ) %>% 
   knitr::kable(caption = "childs_name_olivia_rank_overtime_female")
+
+olivia_df
 ```
+
+## Problem 3 (c)
 
 Produce a similar table showing the most popular name among male children over time.
 
@@ -174,7 +181,11 @@ popular_df =
   ) %>% 
   select(-c(rank, gender)) %>% 
   knitr::kable(caption = "most_popular_childs_name_overtime_male")
+
+popular_df
 ```
+
+## Problem 3 (d)
 
 Finally, for male, white non-hispanic children born in 2016, produce a scatter plot showing the number of children with a name (y axis) against the rank in popularity of that name (x axis).
 
@@ -186,8 +197,11 @@ whitem_df =
     ethnicity == "WHITE NON HISPANIC",
     year_of_birth == 2016
   ) %>% 
-  ggplot(label = "white_male_children_name_rank_2016", aes(x = rank, y = count)) + 
+  ggplot(aes(x = rank, y = count)) + 
   geom_point() + 
-  geom_text(aes(label = childs_first_name), hjust = 0, vjust = 0)
+  geom_text(aes(label = childs_first_name), hjust = 0, vjust = 0) + 
+  ggtitle("white_male_childs_name_rank_2016")
+
+whitem_df
 ```
 
