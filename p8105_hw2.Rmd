@@ -61,13 +61,10 @@ First, clean the data in pols-month.csv. Use separate() to break up the variable
 
 ```{r message = FALSE}
 pols_df = 
-  read_csv("data/fivethirtyeight/pols-month.csv") %>% 
+  read_csv("data/pols-month.csv") %>% 
   janitor::clean_names() %>% 
-  separate(mon, into = c("year", "month", "day")) %>% 
-  mutate(
-    month = as.numeric(month),
-    month = month.abb[month],
-    date = paste(year, month)) %>% 
+  separate(mon, into = c("year", "month", "day"), convert = TRUE) %>% 
+  mutate(month = month.abb[month]) %>% 
   pivot_longer(
     c(prez_gop,prez_dem),
     names_to = "president",
@@ -75,43 +72,38 @@ pols_df =
     values_to = "presidency"
   ) %>% 
   filter(presidency != 0) %>% 
-  select(-c(year, month, day, presidency)) %>% 
-  relocate(date)
+  select(-c(day, presidency)) %>% 
+  relocate(year, month)
 ```
 
 Second, clean the data in snp.csv using a similar process to the above. For consistency across datasets, arrange according to year and month, and organize so that year and month are the leading columns.
 
 ```{r message = FALSE}
 snp_df = 
-  read.csv("data/fivethirtyeight/snp.csv") %>% 
+  read.csv("data/snp.csv") %>% 
   janitor::clean_names() %>% 
   mutate(date = lubridate::mdy(date)) %>% 
-  separate(date, into = c("year", "month", "day")) %>% 
+  separate(date, into = c("year", "month", "day"), convert = TRUE) %>% 
   mutate(
     year = as.numeric(year),
     year = ifelse(year > 2021, year - 100, year),
-    month = as.numeric(month),
-    month = month.abb[month],
-    date = paste(year, month)
+    month = month.abb[month]
     ) %>% 
-  select(-c(year, month, day)) %>% 
-  relocate(date)
+  rename(sp_index = close) %>% 
+  select(-day)
 ```
 
 Third, tidy the unemployment data so that it can be merged with the previous datasets. This process will involve switching from “wide” to “long” format; ensuring that key variables have the same name; and ensuring that key variables take the same values.
 
 ```{r message = FALSE}
 unemploy_df = 
-  read.csv("data/fivethirtyeight/unemployment.csv") %>% 
+  read.csv("data/unemployment.csv") %>% 
   pivot_longer(
     c(Jan:Dec),
     names_to = "month",
     values_to = "percent_unemploy"
   ) %>% 
-  janitor::clean_names() %>% 
-  mutate(date = paste(year, month)) %>% 
-  select(-c(year, month)) %>% 
-  relocate(date)
+  janitor::clean_names()
 ```
 
 Join the datasets by merging snp into pols, and merging unemployment into the result.
@@ -119,12 +111,21 @@ Join the datasets by merging snp into pols, and merging unemployment into the re
 ```{r message = FALSE}
 
 union2_df = 
-  full_join(pols_df, snp_df, by = "date")
+  full_join(pols_df, snp_df, by = c("year", "month"))
 
 union3_df = 
-  full_join(union2_df, unemploy_df, by = "date")
+  full_join(union2_df, unemploy_df, by = c("year", "month"))
 
 ```
+
+For "pols_df", it contains `r names(pols_df)`, which represents the number of governors, senators, representatives for two parties (gop = republican, dem = democratic) on the associated date. It also indicate which party the precident belong to. 
+
+For "snp_df", it contains `r names(snp_df)`, which means the closing values of the S&P stock index for the given time. 
+
+For "unemploy_df", it contains `r names(unemploy_df)`, which represents the percentage of unemployment for the given time.
+
+Resulting dataset combined three above datasets together. The dimension of "union3_df" is `r dim(union3_df)` indicating rows and columns respectively. The range of years is [`r range(pull(union3_df, year))`]. Key variables are `r names(union3_df)`.
+
 
 ## Problem 3
 
