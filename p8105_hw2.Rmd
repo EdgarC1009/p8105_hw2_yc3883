@@ -20,9 +20,9 @@ Read and clean the Mr. Trash Wheel sheet:
 3. omit rows that do not include dumpster-specific data
 4. round the number of sports balls to the nearest integer
 
-```{r }
+```{r message = FALSE}
 trashw_df = 
-  read_excel("data/Trash-Wheel-Collection-Totals-7-2020-2.xlsx", sheet = "Mr. Trash Wheel", range = "A2:N408") %>%
+  read_excel("data/Trash-Wheel-Collection-Totals-7-2020-2.xlsx", sheet = "Mr. Trash Wheel", range = "A2:N534") %>%
   janitor::clean_names() %>% 
   drop_na(dumpster) %>% 
   mutate(sports_balls = round(sports_balls))
@@ -32,7 +32,7 @@ trashw_df =
 
 Read and clean precipitation data for 2018 and 2019. For each, omit rows without precipitation data and add a variable for year. Next, combine precipitation datasets and convert month to a character variable.
 
-```{r}
+```{r message = FALSE}
 
 pdata_2019_df = 
   read_excel("data/Trash-Wheel-Collection-Totals-7-2020-2.xlsx", sheet = "2019 Precipitation", range = "A2:B14") %>%   janitor::clean_names() %>% 
@@ -50,11 +50,16 @@ pdata_df =
 
 ```
 
+For trashw_df, the number of observation is `r nrow(trashw_df)`. All variables in this dataset are `r names(trashw_df)`. Some key variable examples are "weight_tons" with a mean of `r mean(pull(trashw_df, weight_tons))` and variance as `r var(pull(trashw_df, weight_tons))`, "volume_cubic_yards" with a mean of `r mean(pull(trashw_df, volume_cubic_yards))` and variance as `r var(pull(trashw_df, volume_cubic_yards))`, and "plastic_bottles" with a mean of `r mean(pull(trashw_df, plastic_bottles))` and variance as `r var(pull(trashw_df, plastic_bottles))`. The median number of sports balls in a dumpster in 2019 is `r median(pull(filter(trashw_df, year == 2019), sports_balls))`.
+
+For pdata_df, the number of observation is `r nrow(pdata_df)`. All variables in this dataset are `r names(pdata_df)`. "Total_precipitation" is the key variable here with a mean of `r mean(pull(pdata_df, total_precipitation))` and variance of `r var(pull(pdata_df, total_precipitation))`. The total precipitation in 2018 is `r sum(pull(pdata_2018_df, total))`.
+
+
 # Problem 2
 
 First, clean the data in pols-month.csv. Use separate() to break up the variable mon into integer variables year, month, and day; replace month number with month name; create a president variable taking values gop and dem, and remove prez_dem and prez_gop; and remove the day variable.
 
-```{r}
+```{r message = FALSE}
 pols_df = 
   read_csv("data/fivethirtyeight/pols-month.csv") %>% 
   janitor::clean_names() %>% 
@@ -76,7 +81,7 @@ pols_df =
 
 Second, clean the data in snp.csv using a similar process to the above. For consistency across datasets, arrange according to year and month, and organize so that year and month are the leading columns.
 
-```{r}
+```{r message = FALSE}
 snp_df = 
   read.csv("data/fivethirtyeight/snp.csv") %>% 
   janitor::clean_names() %>% 
@@ -95,7 +100,7 @@ snp_df =
 
 Third, tidy the unemployment data so that it can be merged with the previous datasets. This process will involve switching from “wide” to “long” format; ensuring that key variables have the same name; and ensuring that key variables take the same values.
 
-```{r}
+```{r message = FALSE}
 unemploy_df = 
   read.csv("data/fivethirtyeight/unemployment.csv") %>% 
   pivot_longer(
@@ -111,19 +116,21 @@ unemploy_df =
 
 Join the datasets by merging snp into pols, and merging unemployment into the result.
 
-```{r}
+```{r message = FALSE}
+
 union2_df = 
   full_join(pols_df, snp_df, by = "date")
 
 union3_df = 
   full_join(union2_df, unemploy_df, by = "date")
+
 ```
 
 ## Problem 3
 
 Load and tidy the data. Note that, although these data may seem fairly well formatted initially, the names of a categorical predictor and the case structure of string variables changed over time; you’ll need to address this in your data cleaning. Also, some rows seem duplicated, and these will need to be removed.
 
-```{r}
+```{r message = FALSE}
 pbname_df = 
   read_csv("data/Popular_Baby_Names.csv") %>% 
   janitor::clean_names() %>% 
@@ -136,7 +143,7 @@ pbname_df =
 
 Produce a well-structured, reader-friendly table showing the rank in popularity of the name “Olivia” as a female baby name over time; this should have rows for ethnicities and columns for year.
 
-```{r}
+```{r message = FALSE}
 olivia_df = 
   filter(
     pbname_df,
@@ -153,7 +160,7 @@ olivia_df =
 
 Produce a similar table showing the most popular name among male children over time.
 
-```{r}
+```{r message = FALSE}
 popular_df = 
   select(pbname_df, -count) %>% 
   filter(
@@ -170,7 +177,7 @@ popular_df =
 
 Finally, for male, white non-hispanic children born in 2016, produce a scatter plot showing the number of children with a name (y axis) against the rank in popularity of that name (x axis).
 
-```{r}
+```{r message = FALSE}
 whitem_df = 
   filter(
     pbname_df,
@@ -181,6 +188,5 @@ whitem_df =
   ggplot(label = "white_male_children_name_rank_2016", aes(x = rank, y = count)) + 
   geom_point() + 
   geom_text(aes(label = childs_first_name), hjust = 0, vjust = 0)
-
 ```
 
